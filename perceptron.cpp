@@ -2,8 +2,9 @@
 
 
 Perceptron::Perceptron() {
-    _act_fun = [] (double x) { return ( x > 0.5 ? 1 : 0); }; 
-}
+    //_act_fun = [] (double x) { return ( x > 0 ? 1 : -1); }; 
+    _act_fun = [] (double x) { return x; };
+ }
 
 VecData Perceptron::operator() (MatData x_test) {
 
@@ -50,13 +51,18 @@ void Perceptron::train(MatData x_train, VecData y_train) {
     double error = 1;
     double expected_y;
     double calculated_y;
+    double learning_const = 0.01;
     int amount_of_wages = x_train[0].size();
 
     // need some additional step to check if net is configured becouse the _w and _bias 
     // might have been set by user before training
     _w.resize(amount_of_wages, 1);
-    _bias = 1;
    
+    _bias = 1.0;
+    _w[0] = 1.0;
+    _w[1] = 1.0;
+
+    //add few iteration for every entry in one epoch
     for( int k = 0; k < epochs; ++k ) {
         for( int i = 0; i < x_train.size(); ++i ) {    
             expected_y = y_train[i];
@@ -64,9 +70,9 @@ void Perceptron::train(MatData x_train, VecData y_train) {
             error = expected_y - calculated_y;
 
             for( int j = 0; j < _w.size(); ++j ) {
-                _w[j] += error * x_train[i][j]; 
+                _w[j] += learning_const * error * x_train[i][j]; 
             }
-            _bias += error * 1;
+            _bias += error * learning_const;
         }
         std::cout << (*this);
     }

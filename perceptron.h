@@ -10,7 +10,7 @@ class Perceptron {
     private:
         std::vector<double> _w;
         std::function< double(double) > _act_fun;
-        double _bias { 10000 };
+        double _bias { 0 };
     
     public:
         Perceptron();

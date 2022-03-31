@@ -11,7 +11,7 @@ int main() {
 
     std::default_random_engine generator;
     std::normal_distribution<double> group1( 0.0, 3.0 );
-    std::normal_distribution<double> group2( 8.0, 3.0 );
+    std::normal_distribution<double> group2( 9.0, 3.0 );
 
     int group_count = 600;
 
@@ -20,7 +20,7 @@ int main() {
 
     for( int i = 0; i < group_count; ++i ) {
         x_train.push_back( std::vector<double> { group1(generator), group2(generator) } );
-        y_train.push_back( 0 );
+        y_train.push_back( -1 );
     }
 
     for( int i = 0; i < group_count; ++i ) {

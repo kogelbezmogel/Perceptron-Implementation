@@ -28,5 +28,6 @@ fun = lambda x: a*x + b
 x = range(-5, 15)
 y = [ fun(i) for i in x ]
 
-#plt.plot(x ,y, color='red')
+plt.plot(x ,y, color='red')
+plt.ylim(-10, 20)
 plt.show()
