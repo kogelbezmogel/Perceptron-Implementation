@@ -1,3 +1,6 @@
+#ifndef __PERCEPTRON__
+#define __PERCEPTRON__
+
 #include <vector>
 #include <iostream>
 #include <functional>
@@ -28,3 +31,5 @@ class Perceptron {
 };
 
 std::ostream& operator<< (std::ostream& str, const Perceptron& print);
+
+#endif //__PERCEPTRON__
