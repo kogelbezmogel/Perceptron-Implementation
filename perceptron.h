@@ -10,7 +10,7 @@ class Perceptron {
     private:
         std::vector<double> _w;
         std::function< double(double) > _act_fun;
-        double _bias { 0 };
+        double _bias;
     
     public:
         Perceptron();
@@ -18,6 +18,7 @@ class Perceptron {
         std::function< double(double) >& activationFunction() { return _act_fun; };
         std::vector<double>& wages() { return _w; };
         std::vector<double> wages() const { return _w; };
+        double& bias() { return _bias; };
         double bias() const { return _bias; };
 
         void train(MatData x_train, VecData y_train);

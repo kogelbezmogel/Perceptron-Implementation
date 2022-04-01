@@ -1,9 +1,11 @@
+#include <random>
 #include "perceptron.h"
 
+void createRandomOrder( VecData& order_vec, int length );
 
 Perceptron::Perceptron() {
-    //_act_fun = [] (double x) { return ( x > 0 ? 1 : -1); }; 
-    _act_fun = [] (double x) { return x; };
+    _act_fun = [] (double x) { return ( x > 0 ? 1 : -1); }; 
+    //_act_fun = [] (double x) { return x; };
  }
 
 VecData Perceptron::operator() (MatData x_test) {
@@ -46,35 +48,62 @@ void Perceptron::train(MatData x_train, VecData y_train) {
     
     //error detection check size x_train and y_train
 
-    int epochs = 300;
+    int epochs = 100;
+    int iterations_for_gradient_descent = 20;
+    int train_amount = x_train.size();
+    int perc_inputs = x_train[0].size();
+    int amount_of_wages = perc_inputs;
     double max_error = 0.001;
     double error = 1;
     double expected_y;
     double calculated_y;
-    double learning_const = 0.01;
-    int amount_of_wages = x_train[0].size();
+    double learning_const = 0.001;
+    VecData order_vec;
+    createRandomOrder( order_vec, x_train.size() );
+    
+    _w.resize(amount_of_wages, 1);
 
     // need some additional step to check if net is configured becouse the _w and _bias 
-    // might have been set by user before training
-    _w.resize(amount_of_wages, 1);
-   
+    // might have been set by user before training  
     _bias = 1.0;
     _w[0] = 1.0;
     _w[1] = 1.0;
 
-    //add few iteration for every entry in one epoch
+    int i;
     for( int k = 0; k < epochs; ++k ) {
-        for( int i = 0; i < x_train.size(); ++i ) {    
-            expected_y = y_train[i];
-            calculated_y = (*this) ( x_train[i] );
-            error = expected_y - calculated_y;
-
-            for( int j = 0; j < _w.size(); ++j ) {
-                _w[j] += learning_const * error * x_train[i][j]; 
+        for( int index = 0; index < train_amount; ++index ) {    
+            i = order_vec[index]; //rondom order of inputs 
+            for( int j = 0; j < perc_inputs; ++j ) {
+                for( int ite = 0; ite < iterations_for_gradient_descent; ++ite ) {
+                    expected_y = y_train[i];
+                    calculated_y = (*this) ( x_train[i] );
+                    error = expected_y - calculated_y;
+                    
+                    _w[j] += learning_const * error * x_train[i][j];
+                    _bias += error * learning_const;
+                }
             }
-            _bias += error * learning_const;
         }
-        std::cout << (*this);
+    }
+}
+
+void createRandomOrder( VecData& order_vec, int length ) {
+    order_vec.resize(length, 0);
+    for( int i = 0; i < length - 1; ++i )
+        order_vec[i] = i;
+
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    int temp;
+    int rand_index;
+    
+    for( int i = 0; i < length; ++i ) {
+      std::uniform_int_distribution<> distrib(i, length - 1);
+      rand_index = distrib( gen );
+
+      temp = order_vec[i];
+      order_vec[i] = order_vec[rand_index];
+      order_vec[rand_index] = temp;
     }
 }
 

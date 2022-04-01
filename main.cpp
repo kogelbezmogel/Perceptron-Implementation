@@ -5,15 +5,13 @@
 
 int main() {
 
-    std::cout << "\nPoczatek\n";
-
     Perceptron new_perc;
 
     std::default_random_engine generator;
-    std::normal_distribution<double> group1( 0.0, 3.0 );
-    std::normal_distribution<double> group2( 9.0, 3.0 );
+    std::normal_distribution<double> group1( 0.0, 2.0 );
+    std::normal_distribution<double> group2( 4.0, 2.0 );
 
-    int group_count = 600;
+    int group_count = 400;
 
     MatData x_train;
     VecData y_train;
@@ -37,13 +35,16 @@ int main() {
     for( int i = 0; i < test_size; ++i )
         x_test1.push_back( std::vector<double> { group2(generator), group1(generator) } );
 
+    
+    
     VecData results = new_perc( x_test1 );
     for( double i : results )
-        std::cout << i << " ";
+        std::cout << i << "\n";
+    
 
     FILE* file = fopen("data.dat", "w");
     for( int i = 0; i < x_train.size(); ++i ) {
-        fprintf(file, "%15f %15f %d", x_train[i][0], x_train[i][1], y_train[i]);
+        fprintf(file, "%15f %15f %15f", x_train[i][0], x_train[i][1], y_train[i]);
         if( i < x_train.size() - 1)
             fprintf(file, "\n");
     }
@@ -54,8 +55,7 @@ int main() {
         fprintf( file2, "%15f %15f %f", vec[0], vec[1], new_perc.bias() );
     fclose(file2);    
 
-    //std::cout << new_perc;
-    std::cout << "\nKoniec\n";
-
+    std::cout << new_perc;
+ 
 return 0;
 }

@@ -1,15 +1,19 @@
 from tkinter import E
+from turtle import color
 import matplotlib.pyplot as plt
 
 file = open("data.dat", "r")
 content = file.read()
 file.close()
 
-content = [ (x.split()) for x in content.split('\n') if x != [] ]
-x = [ float( x[0] ) for x in content]
-y = [ float( y[1] ) for y in content ]
+content = [ (x.split()) for x in content.split('\n') ]
+x0 = [ float( x[0] ) for x in content if float(x[2]) == 1.0 ]
+y0 = [ float( y[1] ) for y in content if float(y[2]) == 1.0 ]
+x1 = [ float( x[0] ) for x in content if float(x[2]) == -1.0 ]
+y1 = [ float( y[1] ) for y in content if float(y[2]) == -1.0 ]
 
-plt.scatter(x, y)
+plt.scatter(x1, y1, color='green')
+plt.scatter(x0, y0, color='blue')
 
 file1 = open("line.dat", "r")
 content = file1.read()
@@ -30,4 +34,5 @@ y = [ fun(i) for i in x ]
 
 plt.plot(x ,y, color='red')
 plt.ylim(-10, 20)
+plt.xlim(-10, 20)
 plt.show()
