@@ -2,28 +2,12 @@
 #include <algorithm>
 #include "../include/perceptron.h"
 
+FunsContainer Perceptron::_funs = FunsContainer();
 void createRandomOrder( VecData& order_vec, int length );
 
 Perceptron::Perceptron() {
-    _act_fun = [] (double x) { return ( x > 0 ? 1 : -1); }; 
-    _loss_fun_gradient = [](std::vector<double> x, double y, std::vector<double> w, int weight_number) {
-        
-        double ret = 0;
-        double Li = 0;
-
-        for( int i = 0; i < x.size(); ++i ) //counting error value if positive then classification is correct
-            Li += x[i] * w[i];
-        Li += w[ w.size() - 1 ] * 1;
-        Li *= -y;
-
-        if( Li < 0 ) //not correct classification then gradient value is not zero
-            if ( weight_number != w.size() - 1 )
-                ret = -y * x[weight_number];
-            else
-                ret = -y * 1; 
-
-        return ret; 
-    };
+    _act_fun = _funs.getActFun( "sign" ); 
+    _loss_fun_gradient = _funs.getGradFun( "signGradiend" );
     //_act_fun = [] (double x) { return x; };
  }
 
@@ -34,12 +18,11 @@ VecData Perceptron::operator() (MatData x_test) {
     double y;
 
     for( VecData& vec : x_test ) {
-
         y = 0;
-        for( int i = 0; i < _w.size(); ++i ) {
+        for( int i = 0; i < _w.size() - 1; ++i ) {
             y += _w[i] * vec[i];
         }
-        y += _bias;
+        y += _w[ _w.size() - 1]; //bias
         result.push_back( _act_fun(y) );
     }
     return result;
@@ -52,10 +35,10 @@ double Perceptron::operator() (VecData x_test) {
     double result;
 
     result = 0;
-    for( int i = 0; i < _w.size(); ++i ) {
+    for( int i = 0; i < _w.size() - 1; ++i ) {
         result += _w[i] * x_test[i];
     }
-    result += _bias;
+    result +=_w[ _w.size() - 1 ]; //bias
 
 return _act_fun( result );
 }
@@ -88,7 +71,7 @@ void Perceptron::train(MatData x_train, VecData y_train) {
     double error = 1;
     double expected_y;
     double calculated_y;
-    double learning_const = 0.01;
+    double learning_const = 0.001;
     VecData order_vec;
     createRandomOrder( order_vec, x_train.size() );
     
@@ -109,7 +92,7 @@ void Perceptron::train(MatData x_train, VecData y_train) {
             for( int j = 0; j < amount_of_weigths; ++j ) {
                 for( int ite = 0; ite < iterations_for_gradient_descent; ++ite ) {
                     expected_y = y_train[i];
-                    _w[j] += learning_const * _loss_fun_gradient(x_train[i], expected_y, _w, j);
+                    _w[j] -= learning_const * _loss_fun_gradient(x_train[i], expected_y, _w, j);
                 }
             }
         }

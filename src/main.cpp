@@ -8,8 +8,8 @@ int main() {
     Perceptron new_perc;
 
     std::default_random_engine generator;
-    std::normal_distribution<double> group1( 0.0, 2.0 );
-    std::normal_distribution<double> group2( 4.0, 2.0 );
+    std::normal_distribution<double> group1( 0.0, 3.0 );
+    std::normal_distribution<double> group2( 12.0, 3.0 );
 
     int group_count = 400;
 
