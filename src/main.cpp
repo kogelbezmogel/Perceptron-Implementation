@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 
-#include "perceptron.h"
+#include "../include/perceptron.h"
 
 int main() {
 
@@ -36,11 +36,11 @@ int main() {
         x_test1.push_back( std::vector<double> { group2(generator), group1(generator) } );
 
     
-    
+    /*
     VecData results = new_perc( x_test1 );
     for( double i : results )
         std::cout << i << "\n";
-    
+    */
 
     FILE* file = fopen("data.dat", "w");
     for( int i = 0; i < x_train.size(); ++i ) {
@@ -50,7 +50,7 @@ int main() {
     }
     fclose(file);    
 
-    std::vector<double> vec = new_perc.wages();
+    std::vector<double> vec = new_perc.weights();
     FILE* file2 = fopen("line.dat", "w");
         fprintf( file2, "%15f %15f %f", vec[0], vec[1], new_perc.bias() );
     fclose(file2);    

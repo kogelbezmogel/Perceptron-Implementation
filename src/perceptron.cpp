@@ -1,10 +1,12 @@
 #include <random>
-#include "perceptron.h"
+#include <algorithm>
+#include "../include/perceptron.h"
 
 void createRandomOrder( VecData& order_vec, int length );
 
 Perceptron::Perceptron() {
     _act_fun = [] (double x) { return ( x > 0 ? 1 : -1); }; 
+    _loss_fun_gradient = [](double x, double y, double w) { return std::max( -y * x * w, 0.0); };
     //_act_fun = [] (double x) { return x; };
  }
 
@@ -42,7 +44,21 @@ double Perceptron::operator() (VecData x_test) {
 return _act_fun( result );
 }
 
+void Perceptron::setActFun( std::string fun_name ) {
 
+}
+
+void Perceptron::setLossFun( std::string fun_name ) {
+
+}
+
+void Perceptron::printAvailableActFuns() {
+
+}
+
+void Perceptron::printAvailableLossFuns() {
+
+}
 
 void Perceptron::train(MatData x_train, VecData y_train) {
     
@@ -79,7 +95,7 @@ void Perceptron::train(MatData x_train, VecData y_train) {
                     calculated_y = (*this) ( x_train[i] );
                     error = expected_y - calculated_y;
                     
-                    _w[j] += learning_const * error * x_train[i][j];
+                    _w[j] += learning_const * error * _loss_fun_gradient(x_train[i][j], expected_y, _w[j]);
                     _bias += error * learning_const;
                 }
             }
@@ -111,7 +127,7 @@ void createRandomOrder( VecData& order_vec, int length ) {
 std::ostream& operator<< (std::ostream& str, const Perceptron& per) {
 
     str << "wages: [ ";
-    for( double w : per.wages() )
+    for( double w : per.weights() )
         str << w << " ";
     str << "]  bias: " << per.bias() << "\n";
 

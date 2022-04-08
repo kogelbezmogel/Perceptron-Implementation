@@ -1,5 +1,3 @@
-from tkinter import E
-from turtle import color
 import matplotlib.pyplot as plt
 
 file = open("data.dat", "r")
