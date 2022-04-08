@@ -15,7 +15,7 @@ class Perceptron {
     private:
         std::vector<double> _w;
         std::function< double(double) > _act_fun;
-        std::function< double(double, double, double) > _loss_fun_gradient;
+        std::function< double( std::vector<double>, double, std::vector<double>, int ) > _loss_fun_gradient;
         double _bias;
 
     public:

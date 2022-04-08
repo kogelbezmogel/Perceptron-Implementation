@@ -6,7 +6,24 @@ void createRandomOrder( VecData& order_vec, int length );
 
 Perceptron::Perceptron() {
     _act_fun = [] (double x) { return ( x > 0 ? 1 : -1); }; 
-    _loss_fun_gradient = [](double x, double y, double w) { return std::max( -y * x * w, 0.0); };
+    _loss_fun_gradient = [](std::vector<double> x, double y, std::vector<double> w, int weight_number) {
+        
+        double ret = 0;
+        double Li = 0;
+
+        for( int i = 0; i < x.size(); ++i ) //counting error value if positive then classification is correct
+            Li += x[i] * w[i];
+        Li += w[ w.size() - 1 ] * 1;
+        Li *= -y;
+
+        if( Li < 0 ) //not correct classification then gradient value is not zero
+            if ( weight_number != w.size() - 1 )
+                ret = -y * x[weight_number];
+            else
+                ret = -y * 1; 
+
+        return ret; 
+    };
     //_act_fun = [] (double x) { return x; };
  }
 
@@ -27,7 +44,6 @@ VecData Perceptron::operator() (MatData x_test) {
     }
     return result;
 }
-
 
 
 double Perceptron::operator() (VecData x_test) {
@@ -67,36 +83,33 @@ void Perceptron::train(MatData x_train, VecData y_train) {
     int epochs = 100;
     int iterations_for_gradient_descent = 20;
     int train_amount = x_train.size();
-    int perc_inputs = x_train[0].size();
-    int amount_of_wages = perc_inputs;
+    int amount_of_weigths = x_train[0].size() + 1; //index 0 for bias
     double max_error = 0.001;
     double error = 1;
     double expected_y;
     double calculated_y;
-    double learning_const = 0.001;
+    double learning_const = 0.01;
     VecData order_vec;
     createRandomOrder( order_vec, x_train.size() );
     
-    _w.resize(amount_of_wages, 1);
+    _w.resize(amount_of_weigths, 1);
 
     // need some additional step to check if net is configured becouse the _w and _bias 
     // might have been set by user before training  
-    _bias = 1.0;
     _w[0] = 1.0;
     _w[1] = 1.0;
+    _w[2] = 1.0; //bias
+
 
     int i;
     for( int k = 0; k < epochs; ++k ) {
+
         for( int index = 0; index < train_amount; ++index ) {    
             i = order_vec[index]; //rondom order of inputs 
-            for( int j = 0; j < perc_inputs; ++j ) {
+            for( int j = 0; j < amount_of_weigths; ++j ) {
                 for( int ite = 0; ite < iterations_for_gradient_descent; ++ite ) {
                     expected_y = y_train[i];
-                    calculated_y = (*this) ( x_train[i] );
-                    error = expected_y - calculated_y;
-                    
-                    _w[j] += learning_const * error * _loss_fun_gradient(x_train[i][j], expected_y, _w[j]);
-                    _bias += error * learning_const;
+                    _w[j] += learning_const * _loss_fun_gradient(x_train[i], expected_y, _w, j);
                 }
             }
         }
@@ -129,7 +142,7 @@ std::ostream& operator<< (std::ostream& str, const Perceptron& per) {
     str << "wages: [ ";
     for( double w : per.weights() )
         str << w << " ";
-    str << "]  bias: " << per.bias() << "\n";
+    str << "] \n";
 
     return str;
 }

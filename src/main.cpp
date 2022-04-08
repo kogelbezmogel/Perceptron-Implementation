@@ -52,7 +52,7 @@ int main() {
 
     std::vector<double> vec = new_perc.weights();
     FILE* file2 = fopen("line.dat", "w");
-        fprintf( file2, "%15f %15f %f", vec[0], vec[1], new_perc.bias() );
+        fprintf( file2, "%15f %15f %f", vec[0], vec[1], vec[2] );
     fclose(file2);    
 
     std::cout << new_perc;
