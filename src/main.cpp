@@ -8,10 +8,10 @@ int main() {
     Perceptron new_perc;
 
     std::default_random_engine generator;
-    std::normal_distribution<double> group1( 0.0, 3.0 );
-    std::normal_distribution<double> group2( 12.0, 3.0 );
+    std::normal_distribution<double> group1( 4.0, 2 );
+    std::normal_distribution<double> group2( 9.0, 2 );
 
-    int group_count = 400;
+    int group_count = 1000;
 
     MatData x_train;
     VecData y_train;
@@ -27,19 +27,27 @@ int main() {
     }
 
     new_perc.train(x_train, y_train);
+    /*
+    std::cout << "test-----------------------------------------------\n"; 
 
-    int test_size = 100;
+    int test_size = 30;
     MatData x_test1;
+    MatData x_test2;
     for( int i = 0; i < test_size; ++i )
         x_test1.push_back( std::vector<double> { group1(generator), group2(generator) } );
     for( int i = 0; i < test_size; ++i )
-        x_test1.push_back( std::vector<double> { group2(generator), group1(generator) } );
+        x_test2.push_back( std::vector<double> { group2(generator), group1(generator) } );
 
-    
-    /*
-    VecData results = new_perc( x_test1 );
-    for( double i : results )
-        std::cout << i << "\n";
+    VecData results1 = new_perc( x_test1 );
+    VecData results2 = new_perc( x_test2 );
+    for( double i : results1 )
+        std::cout << i << " ";
+    std::cout << "\n\n";
+    for( double i : results2 )
+        std::cout << i << "  ";
+    std::cout << "\n";
+
+    std::cout << "test-end-------------------------------------------\n\n"; 
     */
 
     FILE* file = fopen("data.dat", "w");
@@ -56,6 +64,6 @@ int main() {
     fclose(file2);    
 
     std::cout << new_perc;
- 
+
 return 0;
 }

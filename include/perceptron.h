@@ -6,6 +6,7 @@
 #include <iostream>
 #include <functional>
 #include <map>
+#include <random>
 
 typedef std::vector< std::vector<double> > MatData;
 typedef std::vector<double> VecData;
@@ -15,6 +16,7 @@ class Perceptron {
 
     private:
         static FunsContainer _funs;
+        std::mt19937 _gen;
         std::vector<double> _w;
         std::function< double(double) > _act_fun;
         std::function< double( std::vector<double>, double, std::vector<double>, int ) > _loss_fun_gradient;
@@ -31,9 +33,7 @@ class Perceptron {
         double bias() const { return _w[ _w.size() - 1 ]; };
 
         void setActFun( std::string fun_name );
-        void setLossFun( std::string fun_name );
         void printAvailableActFuns();
-        void printAvailableLossFuns();
 
         void train(MatData x_train, VecData y_train);
 
