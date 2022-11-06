@@ -24,8 +24,8 @@ void Perceptron::train(Mat x_train, Mat y_train) {
     if( x_train.size() != y_train.size() ) // Place for exception
         std::cout << "ERROR! x_train y_train must me same size! " << x_train.size() << " vs " << y_train.size() << "\n";
 
-    int batch_size = 128;
-    int epochs = 500000;
+    int batch_size = 32;
+    int epochs = 15000000;
     int data_size = y_train.size();
     double y_res = 0;
     double z_res = 0;
@@ -38,26 +38,58 @@ void Perceptron::train(Mat x_train, Mat y_train) {
     auto start = std::chrono::high_resolution_clock::now();
     for(int i = 0; i < epochs; i++) {
 
-        // training iterations
-        for(int j = 0; j < data_size; j++) {
-            
-            // current prediction
-            z_res = 0; 
-            for(int k = 0; k < _weights.size(); k++) // add vector multiply inline
-                z_res += _weights[k] * x_train[j][k];
-            z_res += _bias;
-            y_res = _act_fun(z_res);
-            y_real = y_train[j][0];
+        int n_batches = std::ceil( (double) data_size / batch_size );
+        int b_start;
+        int b_end;
+        int N;
+  
+        for(int b = 0; b < n_batches; b++) {
+            b_start = b * batch_size;
+            b_end = std::min( (b+1)*batch_size, data_size );
+            N = b_end - b_start;
 
-            // updating weights
-            for(int k = 0; k < _weights.size(); k++) {
-                _weights[k] += alpha * _grad_loss_fun(y_real, y_res) * _grad_act_fun(z_res) * x_train[j][k]; 
+            // counting sum of gradients over samples in batch
+            Vec gradient_avg;
+            double bias_avg = 0;
+            gradient_avg.resize(_weights.size(), 0);
+            for(int row = b_start; row < b_end; row++) {
+
+                // current prediction
+                z_res = 0; 
+                for(int k = 0; k < _weights.size(); k++) // add vector multiply inline
+                    z_res += _weights[k] * x_train[row][k];
+                z_res += _bias;
+                y_res = _act_fun(z_res);
+                y_real = y_train[row][0];
+
+                for(int w = 0; w < gradient_avg.size(); w++) {
+                    gradient_avg[w] +=  _grad_loss_fun(y_real, y_res) * _grad_act_fun(z_res) * x_train[row][w];
+                    bias_avg +=  _grad_loss_fun(y_real, y_res) * _grad_act_fun(z_res);
+                }
             }
-            _bias += alpha * _grad_loss_fun(y_real, y_res) * _grad_act_fun(z_res);
+
+            // updating by average gradient over batch
+            for(int w = 0; w < _weights.size(); w++) {
+                _weights[w] += alpha * (gradient_avg[w] / N);
+                _bias += alpha * (bias_avg / N);
+            }
         }
-        if( i % 1000 == 0 ) {
+
+        if( i % 100 == 0 ) {
             auto end = std::chrono::high_resolution_clock::now();
-            std::cout << "epoch: " << i << "  |time from start: " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << "\n";
+            double pred_error = 0;
+            for(int j = 0; j < data_size; j++) {
+                z_res = 0; 
+                for(int k = 0; k < _weights.size(); k++) // add vector multiply inline
+                    z_res += _weights[k] * x_train[j][k];
+                z_res += _bias;
+                y_res = _act_fun(z_res);
+                y_real = y_train[j][0];
+                pred_error += _loss_fun(y_real, y_res);
+            }
+            pred_error /= data_size;
+            std::cout << "epoch: " << i << "  |time from start: " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " | loss: " << pred_error << "\n";
+            
         }
     }
 

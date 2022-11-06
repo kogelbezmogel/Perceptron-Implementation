@@ -32,7 +32,7 @@ if __name__ == '__main__':
     model = Sequential()
     model.add( Dense(1, activation='sigmoid') )
     model.compile( loss='binary_crossentropy', optimizer='adam' )
-    model.fit(x_train, y_train, epochs=6000, batch_size=128)
+    model.fit(x_train, y_train, epochs=60, batch_size=516)
     weights = model.get_weights()    
     print( f"weights: {weights}")
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     x_2 = [ x/100 for x in range(500, 1200)]
     y_2 = [ fun(x/100) for x in range(500, 1200) ]
 
-    sns.scatterplot(data=csv_Cdata, x='X', y='Y', hue='class', alpha=0.8, size=1, palette='RdBu')
+    sns.scatterplot(data=csv_Cdata, x='X', y='Y', hue='class', alpha=0.5, size=1, palette='RdBu')
     plt.plot(x, y, color='red')
     plt.plot(x_2, y_2, color='green')
 

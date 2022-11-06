@@ -16,7 +16,7 @@ int main() {
     model.set_second_group_params(10, 1, 10 ,1);
     model(4000, "./data_files/data1.csv");
 
-    DataGeneratorR modelR = DataGeneratorR(1, 0);
+    DataGeneratorR modelR = DataGeneratorR(3, -1);
     modelR(0, 50, "./data_files/linreg.csv");
     // end of data generation 
 
