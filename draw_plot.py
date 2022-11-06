@@ -1,41 +1,52 @@
+import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 
-file = open("data.dat", "r")
-content = file.read()
-file.close()
+from keras import Sequential
+from keras.layers import Dense
 
-content = [ (x.split()) for x in content.split('\n') ]
-x0 = [ float( x[0] ) for x in content if float(x[2]) == 1.0 ]
-y0 = [ float( y[1] ) for y in content if float(y[2]) == 1.0 ]
-x1 = [ float( x[0] ) for x in content if float(x[2]) == -1.0 ]
-y1 = [ float( y[1] ) for y in content if float(y[2]) == -1.0 ]
-
-plt.scatter(x1, y1, color='green')
-plt.scatter(x0, y0, color='blue')
-
-file1 = open("line.dat", "r")
-content = file1.read()
-file1.close()
-
-try :
-    w0 = float( content.split()[0] )
-    w1 = float( content.split()[1] )
-    bias = float( content.split()[2] )
-
-    a = - w0 / w1
-    b = - bias / w1
-    print( f"y = {a}x + {b}" )
-
-    fun = lambda x: a*x + b
-
-    x = range(-5, 15)
-    y = [ fun(i) for i in x ]
-
-    plt.plot(x ,y, color='red')
-except :
-    print("Function can not be interpreted")
+from sklearn.model_selection import train_test_split
 
 
-plt.ylim(-10, 20)
-plt.xlim(-10, 20)
-plt.show()
+if __name__ == '__main__':
+    csv_Cdata = pd.read_csv('./data_files/data1.csv')
+
+
+    file = open('./data_files/ClassPerc.4h')
+    weights = [ float(w) for w in file.readline().split() ]
+    bias = float( file.readline() )
+    file.close()
+
+    a1 = weights[0]
+    a2 = weights[1]
+    fun = lambda x: (-a1/a2)*x + (0.5 - bias)/a2
+    x = [ x/100 for x in range(500, 1200)]
+    y = [ fun(x/100) for x in range(500, 1200) ]
+
+
+    # vs real model
+    X = csv_Cdata[['X', 'Y']]
+    Y = csv_Cdata['class']
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3)
+    
+    model = Sequential()
+    model.add( Dense(1, activation='sigmoid') )
+    model.compile( loss='binary_crossentropy', optimizer='adam' )
+    model.fit(x_train, y_train, epochs=6000, batch_size=128)
+    weights = model.get_weights()    
+    print( f"weights: {weights}")
+
+    a1 = weights[0][0]
+    a2 = weights[0][1]
+    bias = weights[1]
+    fun = lambda x: (-a1/a2)*x + (0.5 - bias)/a2
+    x_2 = [ x/100 for x in range(500, 1200)]
+    y_2 = [ fun(x/100) for x in range(500, 1200) ]
+
+    sns.scatterplot(data=csv_Cdata, x='X', y='Y', hue='class', alpha=0.8, size=1, palette='RdBu')
+    plt.plot(x, y, color='red')
+    plt.plot(x_2, y_2, color='green')
+
+
+    plt.show()
+    

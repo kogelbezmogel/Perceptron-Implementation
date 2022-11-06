@@ -1,45 +1,70 @@
 #ifndef __PERCEPTRON__
 #define __PERCEPTRON__
 
-#include "FunsContainer.h"
 #include <vector>
 #include <iostream>
 #include <functional>
 #include <map>
 #include <random>
+#include <map>
 
-typedef std::vector< std::vector<double> > MatData;
-typedef std::vector<double> VecData;
-typedef std::map< std::string, std::function< double(double)> > MappedFuns;
+
+typedef std::vector<double> Vec;
+typedef std::vector< Vec > Mat;
+typedef std::function< double (double x) > Function;
+typedef std::function< double(double, double) > Function2args;
+typedef std::map< std::string, Function > ActFunMap;
+typedef std::map< std::string, Function > GradientFunMap;
+typedef std::map< std::string, Function2args > LossFunMap;
+typedef std::map< std::string, Function2args > LossGradMap;
+
 
 class Perceptron {
 
-    private:
-        static FunsContainer _funs;
-        std::mt19937 _gen;
-        std::vector<double> _w;
-        std::function< double(double) > _act_fun;
-        std::function< double( std::vector<double>, double, std::vector<double>, int ) > _loss_fun_gradient;
+    // declaration of nested class
+    class FunsContainer;
+
+    bool _empty = {false};
+    Vec _weights;
+    double _bias;
+    Function _act_fun;
+    Function _grad_act_fun;
+    Function2args _grad_loss_fun;
+    Function2args _loss_fun;
+    
+    static FunsContainer _acitivation_function_container;
 
     public:
         Perceptron();
+        Perceptron(std::string activation_function, std::string loss_fun);
+        void train(Mat x_train, Mat y_train);
+        Mat predict(Mat x_test);
 
-        std::function< double(double) >& activationFunction() { return _act_fun; };
+        void set_params(Vec new_params);
+        void set_bias(double new_bias);
 
-        std::vector<double>& weights() { return _w; };
-        std::vector<double> weights() const { return _w; };
+        Vec get_weights() const { return _weights; };
+        double get_bias() const { return _bias; };
 
-        double& bias() { return _w[ _w.size() - 1 ]; };
-        double bias() const { return _w[ _w.size() - 1 ]; };
+        void save( std::string path ) const;
+        void load( std::string path );
 
-        void setActFun( std::string fun_name );
-        void printAvailableActFuns();
+    private:
+        class FunsContainer {
+            ActFunMap _act_fun_map;
+            GradientFunMap _grad_fun_map;
+            LossFunMap _loss_fun_map;
+            LossGradMap _loss_grad_map;
 
-        void train(MatData x_train, VecData y_train);
-
-        VecData operator() ( MatData x_test );
-        double operator() ( VecData x_test );
+            public:
+                FunsContainer();
+                Function get_act_fun(std::string name);
+                Function get_grad_act_fun(std::string name);
+                Function2args get_loss_fun(std::string name);
+                Function2args get_gard_loss(std::string name);
+        };
 };
+
 
 std::ostream& operator<< (std::ostream& str, const Perceptron& print);
 
