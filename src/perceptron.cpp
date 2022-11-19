@@ -9,7 +9,10 @@
 #include "../include/perceptron.h"
 #include "../include/activation_functions.h"
 
+
+
 Perceptron::Perceptron() : _empty(true) { }
+
 
 Perceptron::Perceptron(std::string activation_function, std::string loss_fun) {
     _act_fun = _acitivation_function_container.get_act_fun(activation_function);
@@ -19,21 +22,39 @@ Perceptron::Perceptron(std::string activation_function, std::string loss_fun) {
 }
 
 
-void Perceptron::train(Mat x_train, Mat y_train) {
+void Perceptron::train(Mat x_train, Mat y_train, int epochs, int batch_size, std::string optimazer) {
 
     if( x_train.size() != y_train.size() ) // Place for exception
         std::cout << "ERROR! x_train y_train must me same size! " << x_train.size() << " vs " << y_train.size() << "\n";
 
-    int batch_size = 32;
-    int epochs = 15000000;
     int data_size = y_train.size();
     double y_res = 0;
     double z_res = 0;
     double y_real;
-    double alpha = 0.000001;
-    
+    double alpha = 0.9; //starting value of alpha
+    double epsilon = 10e-7;
+    int n_gradients = 5;
+
+    // seting wieghts and bias to 0
+    // this need to be changed in future
     _weights.resize(x_train[0].size(), 0);
     _bias = 0;
+
+
+    // Adagrad learning rate algorithm variables
+    // thoose are being used by AdaDelta
+    Vec gradient_sq_sum;
+    double bias_gradient_sq_sum = 0;
+    gradient_sq_sum.resize(x_train[0].size(), epsilon);
+
+    // AdaDelta learning rate algorithm variables
+    int amount_of_gradients = 50;
+    VecLists last_n_gradients_sq;
+    std::list<double> last_n_bias_gradients_sq;
+    last_n_gradients_sq.resize( _weights.size() );
+    for( std::list<double>& list : last_n_gradients_sq )
+        list.resize(amount_of_gradients, 0);
+    last_n_bias_gradients_sq.resize(amount_of_gradients, 0);
 
     auto start = std::chrono::high_resolution_clock::now();
     for(int i = 0; i < epochs; i++) {
@@ -43,6 +64,7 @@ void Perceptron::train(Mat x_train, Mat y_train) {
         int b_end;
         int N;
   
+        // counting gradients in batch 
         for(int b = 0; b < n_batches; b++) {
             b_start = b * batch_size;
             b_end = std::min( (b+1)*batch_size, data_size );
@@ -52,6 +74,7 @@ void Perceptron::train(Mat x_train, Mat y_train) {
             Vec gradient_avg;
             double bias_avg = 0;
             gradient_avg.resize(_weights.size(), 0);
+
             for(int row = b_start; row < b_end; row++) {
 
                 // current prediction
@@ -68,14 +91,46 @@ void Perceptron::train(Mat x_train, Mat y_train) {
                 }
             }
 
-            // updating by average gradient over batch
-            for(int w = 0; w < _weights.size(); w++) {
-                _weights[w] += alpha * (gradient_avg[w] / N);
-                _bias += alpha * (bias_avg / N);
+            // counting mean of gradients in batch
+            for(int w = 0; w < _weights.size(); w++) 
+                gradient_avg[w] = gradient_avg[w] / N;
+            bias_avg = bias_avg / N;
+            
+            if(optimazer == "AdaGrad") {
+                for(int w = 0; w < _weights.size(); w++)
+                    gradient_sq_sum[w] += std::pow(gradient_avg[w], 2);
+                bias_gradient_sq_sum += std::pow(bias_avg, 2);
+
+                // updating weights with average gradient over batch for AdaGrad algorithm
+                for(int w = 0; w < _weights.size(); w++) 
+                    _weights[w] += (alpha / std::sqrt(gradient_sq_sum[w])) * gradient_avg[w];
+                _bias += (alpha / std::sqrt(bias_gradient_sq_sum)) * bias_avg;
             }
+
+            if(optimazer == "AdaDelta") {
+                //updating lists of gradients and sums to include only last 5 elements
+                for( int w = 0;  w < _weights.size(); w++ ) {
+                    last_n_gradients_sq[w].push_front( std::pow(gradient_avg[w],2) );
+                    gradient_sq_sum[w] = gradient_sq_sum[w] + last_n_gradients_sq[w].front() - last_n_gradients_sq[w].back();
+                    last_n_gradients_sq[w].pop_back();
+                }
+                last_n_bias_gradients_sq.push_front( std::pow(bias_avg,2) );
+                bias_gradient_sq_sum = bias_gradient_sq_sum + last_n_bias_gradients_sq.front() - last_n_bias_gradients_sq.back();
+                last_n_bias_gradients_sq.pop_back();
+
+                // updating weights with average gradient over batch for AdaGrad algorithm
+                for(int w = 0; w < _weights.size(); w++)
+                    _weights[w] += (alpha / std::sqrt(gradient_sq_sum[w])) * gradient_avg[w];
+                _bias += (alpha / std::sqrt(bias_gradient_sq_sum)) * bias_avg;
+            }
+
+            if(optimazer == "Adam") {
+
+            }
+    
         }
 
-        if( i % 100 == 0 ) {
+        if( i % 1 == 0 ) {
             auto end = std::chrono::high_resolution_clock::now();
             double pred_error = 0;
             for(int j = 0; j < data_size; j++) {
@@ -85,11 +140,24 @@ void Perceptron::train(Mat x_train, Mat y_train) {
                 z_res += _bias;
                 y_res = _act_fun(z_res);
                 y_real = y_train[j][0];
+                if( std::isnan((y_real, y_res)) ) {
+                    std::cout << "z_res: " << z_res << "\n";
+                    std::cout << "y_res: " << y_res << "\n";
+                    exit(0);
+                }
                 pred_error += _loss_fun(y_real, y_res);
             }
             pred_error /= data_size;
-            std::cout << "epoch: " << i << "  |time from start: " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " | loss: " << pred_error << "\n";
-            
+            std::cout << "epoch: " 
+                      << i 
+                      << "  |time from start: "
+                      << std::chrono::duration_cast<std::chrono::seconds>(end - start).count()
+                      << " | loss: "
+                      << pred_error
+                      << " | alphas coeffs: ";
+            for(double sum : gradient_sq_sum)
+                std::cout << alpha / std::sqrt(sum) << "  ";
+            std::cout << "| bias coeff: " << alpha / std::sqrt(bias_gradient_sq_sum) << "\n";
         }
     }
 
@@ -107,7 +175,6 @@ void Perceptron::train(Mat x_train, Mat y_train) {
     }
     pred_error /= data_size;
     std::cout << "loss: " << pred_error << "\n";
-    
 }
 
 

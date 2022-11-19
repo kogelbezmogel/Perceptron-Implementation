@@ -23,7 +23,6 @@ if __name__ == '__main__':
     x = [ x/100 for x in range(500, 1200)]
     y = [ fun(x/100) for x in range(500, 1200) ]
 
-
     # vs real model
     X = csv_Cdata[['X', 'Y']]
     Y = csv_Cdata['class']
@@ -32,7 +31,7 @@ if __name__ == '__main__':
     model = Sequential()
     model.add( Dense(1, activation='sigmoid') )
     model.compile( loss='binary_crossentropy', optimizer='adam' )
-    model.fit(x_train, y_train, epochs=60, batch_size=516)
+    model.fit(x_train, y_train, epochs=1000, batch_size=32)
     weights = model.get_weights()    
     print( f"weights: {weights}")
 
@@ -46,7 +45,6 @@ if __name__ == '__main__':
     sns.scatterplot(data=csv_Cdata, x='X', y='Y', hue='class', alpha=0.5, size=1, palette='RdBu')
     plt.plot(x, y, color='red')
     plt.plot(x_2, y_2, color='green')
-
 
     plt.show()
     

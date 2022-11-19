@@ -7,10 +7,12 @@
 #include <map>
 #include <random>
 #include <map>
+#include <list>
 
 
 typedef std::vector<double> Vec;
 typedef std::vector< Vec > Mat;
+typedef std::vector< std::list<double> > VecLists;
 typedef std::function< double (double x) > Function;
 typedef std::function< double(double, double) > Function2args;
 typedef std::map< std::string, Function > ActFunMap;
@@ -37,11 +39,12 @@ class Perceptron {
     public:
         Perceptron();
         Perceptron(std::string activation_function, std::string loss_fun);
-        void train(Mat x_train, Mat y_train);
+        void train(Mat x_train, Mat y_train, int epochs, int batch_size=1024, std::string optimazier="AdaGrad");
         Mat predict(Mat x_test);
 
         void set_params(Vec new_params);
         void set_bias(double new_bias);
+
 
         Vec get_weights() const { return _weights; };
         double get_bias() const { return _bias; };

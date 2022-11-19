@@ -119,7 +119,7 @@ int main() {
 
     // creating perceptron -----------------------------------------------
     Perceptron perc("sigmoid", "binary-crossentropy");
-    perc.train(x_train, y_train);
+    perc.train(x_train, y_train, 200, 16, "AdaDelta");
     //Mat y_pred = perc.predict(x_test);
 
     std::cout << perc << "\n";

@@ -14,7 +14,13 @@ namespace a_f {
     }
 
     inline double sigmoidFun( double z ) {
-        return  1.0 / (1.0 + std::exp(-z));
+        double res = 1.0 / (1.0 + std::exp(-z));
+        //checking if values was rounded to 0 or 1
+        if( res == 1.0 ) 
+            res -= 10e-7;
+        else if( res == 0.0 )
+            res += 10e-7;
+        return res;
     }
 
     //---------------- loss funs
